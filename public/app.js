@@ -1,51 +1,57 @@
-// Dados dos cursos (em produção, viria de um banco de dados)
+// Dados dos cursos
 const courses = [
   {
     id: 1,
     name: 'JavaScript Avançado',
-    description: 'Domine JavaScript e crie aplicações web modernas',
+    description: 'Domine JavaScript moderno, assincronismo e padrões de design',
     price: 99.90,
-    icon: '💻'
+    icon: '💻',
+    level: 'Avançado'
   },
   {
     id: 2,
     name: 'React do Zero',
-    description: 'Aprenda React e construa SPAs incríveis',
+    description: 'Aprenda React, Hooks e construa aplicações escaláveis',
     price: 129.90,
-    icon: '⚛️'
+    icon: '⚛️',
+    level: 'Intermediário'
   },
   {
     id: 3,
     name: 'Node.js Backend',
-    description: 'Crie APIs robustas com Node.js e Express',
+    description: 'Desenvolva APIs robustas e escaláveis com Node.js',
     price: 119.90,
-    icon: '🚀'
+    icon: '🚀',
+    level: 'Intermediário'
   },
   {
     id: 4,
-    name: 'Web Design Completo',
-    description: 'Design responsivo e UX/UI para web',
+    name: 'Web Design Moderno',
+    description: 'Design responsivo, UX/UI e prototipagem profissional',
     price: 89.90,
-    icon: '🎨'
+    icon: '🎨',
+    level: 'Iniciante'
   },
   {
     id: 5,
     name: 'Banco de Dados SQL',
-    description: 'SQL, MySQL e PostgreSQL na prática',
+    description: 'SQL, MySQL, PostgreSQL e otimização de queries',
     price: 109.90,
-    icon: '🗄️'
+    icon: '🗄️',
+    level: 'Intermediário'
   },
   {
     id: 6,
     name: 'Python para Iniciantes',
-    description: 'Comece sua jornada com Python',
+    description: 'Introdução a Python, estruturas de dados e programação',
     price: 79.90,
-    icon: '🐍'
+    icon: '🐍',
+    level: 'Iniciante'
   }
 ];
 
 // Inicializar Stripe
-const stripe = Stripe('pk_test_YOUR_STRIPE_PUBLIC_KEY'); // Substitua com sua chave pública
+const stripe = Stripe('pk_test_YOUR_STRIPE_PUBLIC_KEY');
 
 // Renderizar cursos na página
 function renderCourses() {
@@ -58,7 +64,7 @@ function renderCourses() {
         <p class="course-description">${course.description}</p>
         <div class="course-price">R$ ${course.price.toFixed(2)}</div>
         <div class="course-footer">
-          <button class="btn btn-primary" style="flex: 1;" onclick="checkout(${course.id}, '${course.name}', ${course.price})">
+          <button class="btn btn-primary" onclick="checkout(${course.id}, '${course.name}', ${course.price})">
             Comprar Agora
           </button>
         </div>
@@ -67,10 +73,13 @@ function renderCourses() {
   `).join('');
 }
 
-// Função de checkout
+// Função de checkout com validação
 async function checkout(courseId, courseName, price) {
   const email = prompt('Digite seu email:');
-  if (!email) return;
+  if (!email || !email.includes('@')) {
+    alert('Por favor, digite um email válido');
+    return;
+  }
 
   try {
     const response = await fetch('/api/checkout/create-session', {
@@ -89,7 +98,6 @@ async function checkout(courseId, courseName, price) {
     const session = await response.json();
 
     if (session.id) {
-      // Redirecionar para o Stripe Checkout
       const result = await stripe.redirectToCheckout({ sessionId: session.id });
       
       if (result.error) {
@@ -100,7 +108,7 @@ async function checkout(courseId, courseName, price) {
     }
   } catch (error) {
     console.error('Erro:', error);
-    alert('Erro ao processar checkout');
+    alert('Erro ao processar checkout. Tente novamente.');
   }
 }
 
